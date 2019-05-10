@@ -11,13 +11,17 @@ import (
 )
 
 type Config struct {
-	DB  *string
-	CSV *CSVConfig
+	DB     *string
+	Format []string
+	PSQL   *PSQLConfig `toml:"pq,pql,psql,postgres,postgresql"`
 }
 
-type CSVConfig struct {
-	Path *string
+type PSQLConfig struct {
+	URL   *string
+	Table *string
 }
+
+var dateColumn = -1
 
 func ReadConfig() *Config {
 	dir, err := os.Getwd()
@@ -50,10 +54,51 @@ func ReadConfig() *Config {
 		log.Fatal("No database specified in config")
 	}
 
+	if conf.Format == nil {
+		log.Fatal("No format specified in config")
+	}
+
+	for i, format := range conf.Format {
+		conf.Format[i] = strings.ToLower(format)
+		format = conf.Format[i]
+
+		switch format {
+		case "date":
+			if dateColumn != -1 {
+				log.Fatal("There can be only one date column")
+			}
+			dateColumn = i
+
+		case "number":
+
+		default:
+			log.Fatal("Format \"", format, "\" not exists")
+		}
+	}
+
+	if dateColumn == -1 {
+		log.Fatal("No data column in format")
+	}
+
 	low := strings.ToLower(*conf.DB)
 	conf.DB = &low
 
 	switch *conf.DB {
+	case "pq", "pql", "psql", "postgre", "postgres", "postgresql":
+		if conf.PSQL == nil {
+			log.Fatal("No postgresql settings in config")
+		}
+
+		if conf.PSQL.URL == nil {
+			log.Fatal("No postgresql URL in config")
+		}
+
+		if conf.PSQL.Table == nil {
+			log.Fatal("No postgresql table name in config")
+		}
+
+		*conf.DB = "postgresql"
+
 	default:
 		log.Fatal("Adapter for ", *conf.DB, " database doesn't exist")
 	}

@@ -1,4 +1,9 @@
-db = "csv"
+db = "pq"
 
-[csv]
-path = "0"
+format = ["date", "number", "number", "number", "number", "number"]
+
+[pq]
+url = "user=egorcod dbname=viz sslmode=disable"
+table = "records"
+
+

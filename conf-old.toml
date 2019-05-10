@@ -1,0 +1,25 @@
+port = 8080
+db = "csv"
+
+[csv]
+	file = "data.csv"
+	format = ["date", "number", "number", "number", "number", "number"]
+
+[[plot]]
+	data = [1]
+
+[[plot]]
+	data = [2, 3]
+
+[[plot]]
+	data = [4, 5]
+
+[[language]]
+	language = "en"
+	headers = ["Time", "Voltage, kw.", "Amperage", "Power, watt", "Energy supplied, kw.×hour", "Energy received, kw.×hour"]
+	plots = ["Voltage", "Amperage and power", "Energy"]
+
+[[language]]
+	language = "ru"
+	headers = ["Время", "Напряжение, кВ", "Ток, А", "Мощность, Вт", "Энергия отданная, кВт×ч", "Энергия принятая, кВт×ч"]
+	plots = ["Напряжение", "Ток и мощность", "Энергия"]

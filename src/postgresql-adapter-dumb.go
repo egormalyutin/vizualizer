@@ -11,13 +11,25 @@ import (
 // This adapter calculates everything on server and stores data in PostgresQL.
 
 type PSQL struct {
-	db *sql.DB
+	db             *sql.DB
+	dateColumnName string
 }
 
 func (p *PSQL) Init() error {
 	db, err := sql.Open("postgres", *conf.PSQL.URL)
+	if err != nil {
+		return err
+	}
+
 	p.db = db
-	return err
+
+	err = p.db.QueryRow(fmt.Sprint("select column_name from information_schema.columns where table_name = '", *conf.PSQL.Table, "' limit 1 offset ", dateColumn)).Scan(&p.dateColumnName)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (p *PSQL) Close() {
@@ -25,26 +37,11 @@ func (p *PSQL) Close() {
 }
 
 func (p *PSQL) GetCount() (int, error) {
-	rows, err := p.db.Query("select count(*) from " + *conf.PSQL.Table)
-	if err != nil {
-		return 0, err
-	}
-
-	defer rows.Close()
-	rows.Next()
-
 	count := 0
-
-	err = rows.Scan(&count)
+	err := p.db.QueryRow("select count(*) from " + *conf.PSQL.Table).Scan(&count)
 	if err != nil {
 		return 0, err
 	}
-
-	err = rows.Err()
-	if err != nil {
-		return 0, err
-	}
-
 	return count, nil
 }
 
@@ -78,6 +75,10 @@ func (p *PSQL) GetRows(offset, count int) (chan []Column, chan error, chan bool,
 
 	go func() {
 		defer rows.Close()
+		defer close(chanRes)
+		defer close(chanErr)
+		defer close(chanEnd)
+
 		for rows.Next() {
 			pointers := []interface{}{}
 
@@ -104,9 +105,9 @@ func (p *PSQL) GetRows(offset, count int) (chan []Column, chan error, chan bool,
 			for i, pointer := range pointers {
 				switch conf.Format[i] {
 				case "date":
-					values = append(values, Date{date: *(pointer.(*time.Time))})
+					values = append(values, Date{*(pointer.(*time.Time))})
 				case "number":
-					values = append(values, Number{number: *(pointer.(*float64))})
+					values = append(values, Number{*(pointer.(*float64))})
 				}
 			}
 
@@ -124,7 +125,20 @@ func (p *PSQL) GetRows(offset, count int) (chan []Column, chan error, chan bool,
 	return chanRes, chanErr, chanEnd, nil
 }
 
+// func (p *PSQL) GetRowsAvg(start, end time.Time, limit int) (chan []Column, chan error, chan bool, error) {
+// whereStr := fmt.Sprint(" where time >= '", start.Format(timeFormat), "' and time <= '", end.Format(timeFormat), "'")
+// fmt.Println(whereStr)
+
+// count := 0
+// err := p.db.QueryRow("select count(*) from " + *conf.PSQL.Table + whereStr).Scan(&count)
+// if err != nil {
+// return nil, nil, nil, err
+// }
+
+// return nil, nil, nil, nil
+// }
+
 func CreatePSQL() error {
-	adapter = &PSQL{nil}
+	adapter = &PSQL{nil, ""}
 	return adapter.Init()
 }

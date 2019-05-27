@@ -11,9 +11,10 @@ import (
 )
 
 type Config struct {
-	DB     *string
-	Format []string
-	PSQL   *PSQLConfig `toml:"pq,pql,psql,postgres,postgresql"`
+	DB       *string
+	Format   []string
+	PSQL     *PSQLConfig `toml:"pq,pql,psql,postgres,postgresql"`
+	CacheDir *string     `toml:"cache,cache-dir"`
 }
 
 type PSQLConfig struct {
@@ -79,6 +80,18 @@ func ReadConfig() *Config {
 	if dateColumn == -1 {
 		log.Fatal("No data column in format")
 	}
+
+	if conf.CacheDir == nil {
+		log.Fatal("No cache dir specified in config")
+	}
+
+	if !filepath.IsAbs(*conf.CacheDir) {
+		configDir := filepath.Dir(path)
+		cacheDir := filepath.Join(configDir, *conf.CacheDir)
+		conf.CacheDir = &cacheDir
+	}
+
+	log.Print("Cache dir: ", *conf.CacheDir)
 
 	low := strings.ToLower(*conf.DB)
 	conf.DB = &low

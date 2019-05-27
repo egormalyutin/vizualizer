@@ -1,4 +1,5 @@
 db = "pq"
+cache = "./postgresql-cache"
 
 format = ["date", "number", "number", "number", "number", "number"]
 

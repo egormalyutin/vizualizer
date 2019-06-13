@@ -11,15 +11,17 @@ import (
 )
 
 type Config struct {
-	DB       *string
-	Format   []string
-	PSQL     *PSQLConfig `toml:"pq,pql,psql,postgres,postgresql"`
-	CacheDir *string     `toml:"cache,cache-dir"`
+	DB     *string
+	Format []string
+	PSQL   *PSQLConfig `toml:"postgresql"`
 }
 
 type PSQLConfig struct {
-	URL   *string
-	Table *string
+	URL          *string
+	Table        *string
+	MinutesTable *string `toml:"minutes-table"`
+	HoursTable   *string `toml:"hours-table"`
+	DaysTable    *string `toml:"days-table"`
 }
 
 var dateColumn = -1
@@ -81,18 +83,6 @@ func ReadConfig() *Config {
 		log.Fatal("No data column in format")
 	}
 
-	if conf.CacheDir == nil {
-		log.Fatal("No cache dir specified in config")
-	}
-
-	if !filepath.IsAbs(*conf.CacheDir) {
-		configDir := filepath.Dir(path)
-		cacheDir := filepath.Join(configDir, *conf.CacheDir)
-		conf.CacheDir = &cacheDir
-	}
-
-	log.Print("Cache dir: ", *conf.CacheDir)
-
 	low := strings.ToLower(*conf.DB)
 	conf.DB = &low
 
@@ -114,6 +104,36 @@ func ReadConfig() *Config {
 
 	default:
 		log.Fatal("Adapter for ", *conf.DB, " database doesn't exist")
+	}
+
+	// CACHE TABLES MESSAGE
+	if conf.PSQL != nil {
+		cacheArr := []string{}
+
+		if conf.PSQL.MinutesTable != nil {
+			cacheArr = append(cacheArr, "minutes")
+		}
+		if conf.PSQL.HoursTable != nil {
+			cacheArr = append(cacheArr, "hours")
+		}
+		if conf.PSQL.DaysTable != nil {
+			cacheArr = append(cacheArr, "days")
+		}
+
+		switch len(cacheArr) {
+		case 0:
+			log.Print("WARNING: Not found any PostgreSQL cache tables in config. For greatest performance you must include all of them. You can see instructions for setting up these cache tables in README.")
+			// TODO: write about cache tables in README
+		case 1:
+			log.Print("Found one PostgreSQL cache table in config: " + cacheArr[0] + ".")
+			log.Print("TIP: For greatest performance, you can include more PostgreSQL cache tables in config. You can see instructions for setting up these cache tables in README.")
+		case 2:
+			log.Print("Found two PostgreSQL cache tables in config: " + cacheArr[0] + " and " + cacheArr[1] + ".")
+			log.Print("TIP: For greatest performance, you can include more PostgreSQL cache tables in config. You can see instructions for setting up these cache tables in README.")
+		case 3:
+			log.Print("Found all three PostgreSQL cache tables in config: " + cacheArr[0] + ", " + cacheArr[1] + " and " + cacheArr[2] + ".")
+			log.Print("You've got a nice perfomance! :)")
+		}
 	}
 
 	return &conf

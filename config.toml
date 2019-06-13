@@ -3,8 +3,9 @@ cache = "./postgresql-cache"
 
 format = ["date", "number", "number", "number", "number", "number"]
 
-[pq]
+[postgresql]
 url = "user=egorcod dbname=viz sslmode=disable"
 table = "records"
-
-
+days-table = "records_days"
+hours-table = "records_hours"
+minutes-table = "records_minutes"

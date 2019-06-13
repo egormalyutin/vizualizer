@@ -1,0 +1,78 @@
+create or replace function insert_new(t1 text, int1 interval, c1 text, db1 text, nt timestamptz)
+  returns void
+as $$
+begin
+	insert into c1 (time, voltage, amperage, power, energy_supplied, energy_received)
+			(select date_trunc(t1, nt.time) as time, * from
+				(select
+			 	 avg(voltage) as voltage,
+				 avg(amperage) as amperage,
+				 avg(power) as power,
+				 avg(energy_supplied) as energy_supplied,
+				 avg(energy_received) as energy_received
+				 from db1
+				 where time >= date_trunc(t1, nt.time)
+	  			   and time <= date_trunc(t1, int1 + nt.time)
+			    ) tbl1
+			)
+		on conflict (time)
+		do update set
+			voltage = EXCLUDED.voltage,
+			amperage = EXCLUDED.amperage,
+			power = EXCLUDED.power,
+			energy_supplied = EXCLUDED.energy_supplied,
+			energy_received = EXCLUDED.energy_received;
+end; $$
+language plpgsql;
+
+create or replace rule cache_records_minutes as on insert to records
+do also select insert_new('minute', interval '1 min', 'records_minutes', 'records', NEW.time);
+
+create or replace rule cache_records_hours as on insert to records_minutes
+do also select insert_new('hour', interval '1 hour', 'records_hours', 'records_minutes', NEW.time);
+
+create or replace rule cache_records_days as on insert to records_hours
+do also select insert_new('day', interval '1 day', 'records_days', 'records_hours', NEW.time);
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+-- create uuids to prevent clash of temp tables
+drop view if exists results_1;
+drop table if exists min_max_1;
+
+
+
+create temp view results_1 as
+	select *
+	from records_hours
+	where time >= '2015-11-24 05:35:27' 
+	  and time <= '2016-03-01 06:36:12';
+
+create temp table min_max_1 (min, max, diff) as (
+	select min, max, max - min as diff from (
+		select extract(epoch from min) as min, extract(epoch from max) as max
+		from (
+			select min(time) as min, max(time) as max
+			from results_1
+		) t1
+	) t2
+);
+
+
+
+select
+avg(extract(epoch from time)),
+avg(voltage) as voltage,
+avg(amperage) as amperage,
+avg(power) as power,
+avg(energy_supplied) as energy_supplied,
+avg(energy_received) as energy_received
+from results_1
+group by floor((extract(epoch from time) - (select min from min_max_1)) / (select diff from min_max_1) * 99);
+
+
+
+drop view if exists results_1;
+drop table if exists min_max_1;
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

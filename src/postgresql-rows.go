@@ -6,7 +6,10 @@ import (
 )
 
 func (p *PSQL) GetRows(offset, count int) (chan []Column, chan error, chan bool, error) {
-	rows, err := p.db.Query(fmt.Sprint("select * from ", *conf.PSQL.Table, " offset ", offset, " limit ", count))
+	rows, err := p.db.Query(fmt.Sprint("select * from '", escapeString(*conf.PSQL.Table, "'"),
+		"' offset ", offset, " limit ", count,
+		" order by '", escapeString(p.dateColumnName, "'"), "' asc"))
+
 	if err != nil {
 		return nil, nil, nil, err
 	}

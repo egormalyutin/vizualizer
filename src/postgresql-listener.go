@@ -18,6 +18,6 @@ func (p *PSQL) RunListener() error {
 			bus.Publish("count", count)
 		}
 
-		time.Sleep(time.Second * 2)
+		time.Sleep(time.Second * 5)
 	}
 }

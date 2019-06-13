@@ -8,7 +8,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// This adapter calculates everything on server and stores data in PostgresQL.
+// This adapter stores and calculates data in postgresql.
 
 type PSQL struct {
 	db             *sql.DB
@@ -23,7 +23,8 @@ func (p *PSQL) Init() error {
 
 	p.db = db
 
-	err = p.db.QueryRow(fmt.Sprint("select column_name from information_schema.columns where table_name = '", *conf.PSQL.Table, "' limit 1 offset ", dateColumn)).Scan(&p.dateColumnName)
+	err = p.db.QueryRow(fmt.Sprint("select column_name from information_schema.columns where table_name = '",
+		escapeString(*conf.PSQL.Table, "'"), "' limit 1 offset ", dateColumn)).Scan(&p.dateColumnName)
 
 	if err != nil {
 		return err

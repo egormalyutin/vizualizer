@@ -8,8 +8,6 @@ import (
 	eventBus "github.com/asaskevich/EventBus"
 )
 
-const timeFormat = "2006-01-02 15:04:05"
-
 ////// GLOBAL VARS //////
 var (
 	// DB adapter
@@ -30,7 +28,7 @@ type Date struct {
 }
 
 func (d Date) ToCSV() string {
-	return d.Date.Format(timeFormat)
+	return d.Date.UTC().Format(timeFormat)
 }
 
 type Number struct {
@@ -62,10 +60,10 @@ type Adapter interface {
 	RunListener() error
 
 	// Chan is here to not swamp RAM.
-	GetRows(offset, count int) (chan []Column, chan error, chan bool, error)
+	GetRows(offset, count int) (chan []Column, chan error, chan bool)
 
 	// Gets rows in range of given dates and averages them.
-	// GetRowsAvg(start, end time.Time, period string) (chan []Column, chan error, chan bool, error)
+	GetRowsAvg(start, end time.Time, count int) (chan []Column, chan error, chan bool)
 }
 
 func Start() {
@@ -80,6 +78,21 @@ func Start() {
 	}
 
 	defer adapter.Close()
+
+	cres, cerr, cend := adapter.GetRowsAvg(mustParseTime("2015-11-24 05:35:27"), mustParseTime("2016-03-01 06:36:12"), 100)
+
+For1:
+	for {
+		select {
+		case line := <-cres:
+			log.Print(line)
+		case err := <-cerr:
+			log.Print(err)
+		case <-cend:
+			log.Print("SUCC")
+			break For1
+		}
+	}
 
 	log.Fatal(adapter.RunListener())
 }

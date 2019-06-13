@@ -91,7 +91,7 @@ create temp table min_max_1 (min, max, diff) as (
 
 
 select
-avg(extract(epoch from time)),
+avg(extract(epoch from time)) as time,
 avg(voltage) as voltage,
 avg(amperage) as amperage,
 avg(power) as power,

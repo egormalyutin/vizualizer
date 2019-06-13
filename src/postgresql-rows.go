@@ -5,24 +5,25 @@ import (
 	"time"
 )
 
-func (p *PSQL) GetRows(offset, count int) (chan []Column, chan error, chan bool, error) {
-	rows, err := p.db.Query(fmt.Sprint("select * from '", escapeString(*conf.PSQL.Table, "'"),
-		"' offset ", offset, " limit ", count,
-		" order by '", escapeString(p.dateColumnName, "'"), "' asc"))
-
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
+func (p *PSQL) GetRows(offset, count int) (chan []Column, chan error, chan bool) {
 	chanRes := make(chan []Column)
 	chanErr := make(chan error)
-	chanEnd := make(chan bool)
+	chanSucc := make(chan bool)
 
 	go func() {
-		defer rows.Close()
 		defer close(chanRes)
 		defer close(chanErr)
-		defer close(chanEnd)
+		defer close(chanSucc)
+
+		rows, err := p.db.Query(fmt.Sprint("select * from \"", escapeString(*conf.PSQL.Table, "\""),
+			"\" offset ", offset, " limit ", count,
+			" order by \"", escapeString(p.dateColumnName, "\""), "\" asc"))
+
+		if err != nil {
+			chanErr <- err
+		}
+
+		defer rows.Close()
 
 		for rows.Next() {
 			pointers := []interface{}{}
@@ -64,8 +65,8 @@ func (p *PSQL) GetRows(offset, count int) (chan []Column, chan error, chan bool,
 			chanErr <- err
 		}
 
-		chanEnd <- true
+		chanSucc <- true
 	}()
 
-	return chanRes, chanErr, chanEnd, nil
+	return chanRes, chanErr, chanSucc
 }

@@ -41,9 +41,6 @@ func (p *PSQL) GetRowsAvg(start, end time.Time, count int) (chan []Column, chan 
 	log.Print(readTable)
 
 	query := `
-drop view if exists results_` + rid + `;
-drop table if exists min_max_` + rid + `;
-
 create temp view results_` + rid + ` as
 	select *
 	from "` + readTable + `"

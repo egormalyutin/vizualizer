@@ -66,12 +66,6 @@ do also (
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
--- create uuids to prevent clash of temp tables
-drop view if exists results_1;
-drop table if exists min_max_1;
-
-
-
 create temp view results_1 as
 	select *
 	from records_hours

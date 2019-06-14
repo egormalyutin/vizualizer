@@ -7,10 +7,6 @@ import (
 )
 
 func (p *PSQL) GetRowsAvg(start, end time.Time, count int) (chan []Column, chan error, chan bool) {
-	// TODO: detect if cache is accessible
-	// TODO: append min and max date
-	// TODO: interpolate when few lines in results
-
 	timeDiff := end.Sub(start)
 
 	cacheLevel := 0

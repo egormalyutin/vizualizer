@@ -27,4 +27,5 @@ create table records (
 )
 ```
 
-TODO: add sslmode=disable
+/* TODO: add sslmode=disable */
+/* TODO: add cache tables tutorial */

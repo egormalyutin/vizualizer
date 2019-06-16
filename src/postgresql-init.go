@@ -13,6 +13,7 @@ import (
 type PSQL struct {
 	db             *sql.DB
 	dateColumnName string
+	columnNames    []string
 }
 
 func (p *PSQL) Init() error {
@@ -23,18 +24,29 @@ func (p *PSQL) Init() error {
 
 	p.db = db
 
-	err = p.db.QueryRow(fmt.Sprint("select column_name from information_schema.columns where table_name = '",
-		escapeString(*conf.PSQL.Table, "'"), "' limit 1 offset ", dateColumn)).Scan(&p.dateColumnName)
+	p.columnNames = []string{}
 
+	rows, err := p.db.Query(fmt.Sprint("select column_name from information_schema.columns where table_name = '", escapeString(*conf.PSQL.Table, "'"), "'"))
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 
-	return nil
+	for rows.Next() {
+		var columnName string
+		if err := rows.Scan(&columnName); err != nil {
+			return err
+		}
+		p.columnNames = append(p.columnNames, columnName)
+	}
+
+	p.dateColumnName = p.columnNames[dateColumn]
+
+	return rows.Err()
 }
 
 func CreatePSQL() error {
-	adapter = &PSQL{nil, ""}
+	adapter = &PSQL{nil, "", nil}
 	return adapter.Init()
 }
 

@@ -18,7 +18,7 @@ func interfaceToPointer(i interface{}) *interface{} {
 }
 
 func escapeString(str, ch string) string {
-	return strings.Replace(str, ch, "\\"+ch, -1)
+	return strings.Replace(strings.Replace(str, "\\", "\\\\", -1), ch, "\\"+ch, -1)
 }
 
 func randomID() string {

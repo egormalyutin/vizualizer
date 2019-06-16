@@ -150,37 +150,6 @@ drop table if exists max_orig_` + rid + `;
 `
 	log.Print(query)
 
-	// query := `
-	// create temp view results_` + rid + ` as
-	// select *
-	// from "` + readTable + `"
-	// where time >= '` + formatTime(start) + `'
-	// and time <= '` + formatTime(end) + `';
-
-	// create temp table min_max_` + rid + ` (min, max, diff) as (
-	// select min, max, max - min as diff from (
-	// select extract(epoch from min) as min, extract(epoch from max) as max
-	// from (
-	// select min(time) as min, max(time) as max
-	// from results_` + rid + `
-	// ) t1
-	// ) t2
-	// );
-
-	// select
-	// to_timestamp(avg(extract(epoch from time))) as time,
-	// avg(voltage) as voltage,
-	// avg(amperage) as amperage,
-	// avg(power) as power,
-	// avg(energy_supplied) as energy_supplied,
-	// avg(energy_received) as energy_received
-	// from results_` + rid + `
-	// group by floor((extract(epoch from time) - (select min from min_max_` + rid + `)) / (select diff from min_max_` + rid + `) * ` + fmt.Sprint(count-1) + `);
-
-	// drop view if exists results_` + rid + `;
-	// drop table if exists min_max_` + rid + `;
-	// `
-
 	chanRes := make(chan []Column)
 	chanErr := make(chan error)
 	chanSucc := make(chan bool)

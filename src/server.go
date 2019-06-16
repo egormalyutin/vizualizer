@@ -1,7 +1,7 @@
 package src
 
 import (
-	"github.com/valyala/fasthttp"
+// "github.com/valyala/fasthttp"
 )
 
 func StartServer() {

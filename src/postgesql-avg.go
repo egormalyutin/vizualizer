@@ -2,7 +2,6 @@ package src
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"time"
 )
@@ -28,7 +27,6 @@ func (p *PSQL) GetRowsAvg(start, end time.Time, count int) (chan []Column, chan 
 	avCache := *conf.PSQL.Table
 
 	for i := cacheLevel; i >= 1; i-- {
-		log.Print(conf.PSQL)
 		if i == 3 && conf.PSQL.DaysTable != nil {
 			avCacheLevel = 3
 			avCache = *conf.PSQL.DaysTable
@@ -46,7 +44,6 @@ func (p *PSQL) GetRowsAvg(start, end time.Time, count int) (chan []Column, chan 
 
 	rid := randomID()
 	readTable := escapeString(avCache, "\"")
-	log.Print(readTable)
 
 	var (
 		truncStart time.Time
@@ -148,7 +145,6 @@ drop table if exists min_max_` + rid + `;
 drop table if exists min_orig_` + rid + `;
 drop table if exists max_orig_` + rid + `;
 `
-	log.Print(query)
 
 	chanRes := make(chan []Column)
 	chanErr := make(chan error)

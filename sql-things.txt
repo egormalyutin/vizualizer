@@ -69,8 +69,8 @@ do also (
 create temp view results_1 as
 	select *
 	from records_hours
-	where time >= '2015-11-24 05:35:27' 
-	  and time <= '2016-03-01 06:36:12';
+	where time >= date_trunc('hour', '2015-11-24 05:35:27' :: timestamptz)
+	  and time <= date_trunc('hour', '2016-03-01 06:36:12' :: timestamptz);
 
 create temp table min_max_1 (min, max, diff) as (
 	select min, max, max - min as diff from (
@@ -82,22 +82,48 @@ create temp table min_max_1 (min, max, diff) as (
 	) t2
 );
 
+create temp table min_orig_1 (time, voltage, amperage, power, energy_supplied, energy_received) as (
+	select *
+	from records
+	where time >= '2015-11-24 05:35:27' 
+	  and time <= '2016-03-01 06:36:12'
+	order by time asc
+	limit 1
+);
 
+create temp table max_orig_1 (time, voltage, amperage, power, energy_supplied, energy_received) as (
+	select *
+	from records
+	where time >= '2015-11-24 05:35:27' 
+	  and time <= '2016-03-01 06:36:12'
+	order by time desc
+	limit 1
+);
 
-select
-avg(extract(epoch from time)) as time,
-avg(voltage) as voltage,
-avg(amperage) as amperage,
-avg(power) as power,
-avg(energy_supplied) as energy_supplied,
-avg(energy_received) as energy_received
-from results_1
-group by floor((extract(epoch from time) - (select min from min_max_1)) / (select diff from min_max_1) * 99);
+select * from (
+	(select * from min_orig_1)
+	union
+	(select
+	to_timestamp(avg(extract(epoch from time))) as time,
+	avg(voltage) as voltage,
+	avg(amperage) as amperage,
+	avg(power) as power,
+	avg(energy_supplied) as energy_supplied,
+	avg(energy_received) as energy_received
+	from results_1
+	group by floor((extract(epoch from time) - (select min from min_max_1)) / (select diff from min_max_1) * 97))
+	union
+	(select * from max_orig_1)
+) ret1
+order by time asc;
 
 
 
 drop view if exists results_1;
 drop table if exists min_max_1;
+drop table if exists min_orig_1;
+drop table if exists max_orig_1;
+
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

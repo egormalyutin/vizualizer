@@ -166,7 +166,7 @@ drop table if exists max_orig_` + rid + `;
 		for rows.Next() {
 			pointers := []interface{}{}
 
-			for _, format := range conf.Format {
+			for _, format := range conf.PSQL.Format {
 				switch format {
 				case "date":
 					var date time.Time
@@ -187,7 +187,7 @@ drop table if exists max_orig_` + rid + `;
 			values := []Column{}
 
 			for i, pointer := range pointers {
-				switch conf.Format[i] {
+				switch conf.PSQL.Format[i] {
 				case "date":
 					values = append(values, Date{*(pointer.(*time.Time))})
 				case "number":

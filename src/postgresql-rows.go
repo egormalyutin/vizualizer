@@ -28,7 +28,7 @@ func (p *PSQL) GetRows(offset, count int) (chan []Column, chan error, chan bool)
 		for rows.Next() {
 			pointers := []interface{}{}
 
-			for _, format := range conf.Format {
+			for _, format := range conf.PSQL.Format {
 				switch format {
 				case "date":
 					var date time.Time
@@ -49,7 +49,7 @@ func (p *PSQL) GetRows(offset, count int) (chan []Column, chan error, chan bool)
 			values := []Column{}
 
 			for i, pointer := range pointers {
-				switch conf.Format[i] {
+				switch conf.PSQL.Format[i] {
 				case "date":
 					values = append(values, Date{*(pointer.(*time.Time))})
 				case "number":

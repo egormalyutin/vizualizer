@@ -11,9 +11,8 @@ import (
 )
 
 type Config struct {
-	DB     *string
-	Format []string
-	PSQL   *PSQLConfig `toml:"postgresql"`
+	DB   *string
+	PSQL *PSQLConfig `toml:"postgresql"`
 }
 
 type PSQLConfig struct {
@@ -22,6 +21,7 @@ type PSQLConfig struct {
 	MinutesTable *string `toml:"minutes-table"`
 	HoursTable   *string `toml:"hours-table"`
 	DaysTable    *string `toml:"days-table"`
+	Format       []string
 }
 
 var dateColumn = -1
@@ -57,32 +57,6 @@ func ReadConfig() *Config {
 		log.Fatal("No database specified in config")
 	}
 
-	if conf.Format == nil {
-		log.Fatal("No format specified in config")
-	}
-
-	for i, format := range conf.Format {
-		conf.Format[i] = strings.ToLower(format)
-		format = conf.Format[i]
-
-		switch format {
-		case "date":
-			if dateColumn != -1 {
-				log.Fatal("There can be only one date column")
-			}
-			dateColumn = i
-
-		case "number":
-
-		default:
-			log.Fatal("Format \"", format, "\" not exists")
-		}
-	}
-
-	if dateColumn == -1 {
-		log.Fatal("No data column in format")
-	}
-
 	low := strings.ToLower(*conf.DB)
 	conf.DB = &low
 
@@ -108,6 +82,32 @@ func ReadConfig() *Config {
 
 	// CACHE TABLES MESSAGE
 	if conf.PSQL != nil {
+		if conf.PSQL.Format == nil {
+			log.Fatal("No format specified in config")
+		}
+
+		for i, format := range conf.PSQL.Format {
+			conf.PSQL.Format[i] = strings.ToLower(format)
+			format = conf.PSQL.Format[i]
+
+			switch format {
+			case "date":
+				if dateColumn != -1 {
+					log.Fatal("There can be only one date column")
+				}
+				dateColumn = i
+
+			case "number":
+
+			default:
+				log.Fatal("Format \"", format, "\" not exists")
+			}
+		}
+
+		if dateColumn == -1 {
+			log.Fatal("No data column in format")
+		}
+
 		cacheArr := []string{}
 
 		if conf.PSQL.MinutesTable != nil {

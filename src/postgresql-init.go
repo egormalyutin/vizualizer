@@ -42,7 +42,15 @@ func (p *PSQL) Init() error {
 
 	p.dateColumnName = p.columnNames[dateColumn]
 
-	return rows.Err()
+	if err := rows.Err(); err != nil {
+		return err
+	}
+
+	if err := p.checkTables(); err != nil {
+		return err
+	}
+
+	return p.createCache()
 }
 
 func CreatePSQL() error {

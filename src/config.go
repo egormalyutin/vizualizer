@@ -123,12 +123,18 @@ func ReadConfig() *Config {
 		switch len(cacheArr) {
 		case 0:
 			log.Print("WARNING: Not found any PostgreSQL cache tables in config. For greatest performance you must include all of them. You can see instructions for setting up these cache tables in README.")
+			log.Print("WARNING: Not found any PostgreSQL cache tables in config. For greatest performance you must include all of them. You can see instructions for setting up these cache tables in README.")
+			log.Print("WARNING: Not found any PostgreSQL cache tables in config. For greatest performance you must include all of them. You can see instructions for setting up these cache tables in README.")
 			// TODO: write about cache tables in README
 		case 1:
 			log.Print("Found one PostgreSQL cache table in config: " + cacheArr[0] + ".")
 			log.Print("TIP: For greatest performance, you can include more PostgreSQL cache tables in config. You can see instructions for setting up these cache tables in README.")
+			log.Print("TIP: For greatest performance, you can include more PostgreSQL cache tables in config. You can see instructions for setting up these cache tables in README.")
+			log.Print("TIP: For greatest performance, you can include more PostgreSQL cache tables in config. You can see instructions for setting up these cache tables in README.")
 		case 2:
 			log.Print("Found two PostgreSQL cache tables in config: " + cacheArr[0] + " and " + cacheArr[1] + ".")
+			log.Print("TIP: For greatest performance, you can include more PostgreSQL cache tables in config. You can see instructions for setting up these cache tables in README.")
+			log.Print("TIP: For greatest performance, you can include more PostgreSQL cache tables in config. You can see instructions for setting up these cache tables in README.")
 			log.Print("TIP: For greatest performance, you can include more PostgreSQL cache tables in config. You can see instructions for setting up these cache tables in README.")
 		case 3:
 			log.Print("Found all three PostgreSQL cache tables in config: " + cacheArr[0] + ", " + cacheArr[1] + " and " + cacheArr[2] + ".")

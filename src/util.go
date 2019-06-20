@@ -1,6 +1,7 @@
 package src
 
 import (
+	"fmt"
 	"math/rand"
 	"reflect"
 	"strings"
@@ -40,4 +41,8 @@ func mustParseTime(t string) time.Time {
 		panic(err)
 	}
 	return res
+}
+
+func toErr(prefix string, err error) error {
+	// return fmt.
 }
